@@ -1,0 +1,35 @@
+version: '3.4'
+
+services:
+  samba:
+    image: dperson/samba
+    container_name: samba
+    ports:
+      - "137:137"
+      - "138:138"
+      - "139:139"
+      - "445:445"
+    volumes:
+      - /mnt/HDD:/mnt/HDD
+      - /mnt/NAS:/mnt/NAS
+    command:
+      "-u samba;password -u Comics;password -s HDD;/mnt/HDD;yes;no;no;all;samba;samba -s NAS;/mnt/NAS;yes;no;no;all;samba;samba -s Comics;/mnt/HDD/Comics;no;no;no;all;Comics;Comics"
+    restart: always
+  vpn:
+    build:
+      context: ./vpn/build
+      dockerfile: Dockerfile
+    container_name: vpn
+    volumes:
+      - ./vpn/vpnserver/vpn_server.config:/usr/vpnserver/vpn_server.config
+      - ./vpn/vpnclient/vpn_client.config:/usr/vpnclient/vpn_client.config
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+      - SYS_ADMIN
+    network_mode: "host"
+    privileged: true
+    tty: true
+    restart: always
+networks:
+  default:
